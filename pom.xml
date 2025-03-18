@@ -23,6 +23,7 @@
     <dependencies>
 <!--         Ваши зависимости-->
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -54,6 +55,6 @@
             <artifactId>hibernate-core</artifactId>
             <version>5.6.3.Final</version>
         </dependency>
-     </dependencies>
+    </dependencies>
 
 </project>

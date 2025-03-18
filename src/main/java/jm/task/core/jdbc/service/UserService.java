@@ -5,6 +5,7 @@ import jm.task.core.jdbc.model.User;
 import java.util.List;
 
 public interface UserService {
+   void setWay(boolean way);
     void createUsersTable();
 
     void dropUsersTable();

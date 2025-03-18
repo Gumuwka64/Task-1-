@@ -2,7 +2,7 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 
-import javax.persistence.NoResultException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public class UserDaoJDBCImpl implements UserDao {
     //запрос на создание
     private static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS users (" +
             "id BIGSERIAL  PRIMARY KEY," +
-            "name VARCHAR(50) NOT NULL," + //сделать проверку на syze
+            "name VARCHAR(50) NOT NULL," +
             "lastName VARCHAR(100) NOT NULL," +
             "age SMALLINT NOT NULL)"; //сделать проверку на отрицательный возраст
 
@@ -25,13 +25,22 @@ public class UserDaoJDBCImpl implements UserDao {
     private static final String  SQL_REMOVE_BY_ID = "DELETE FROM users WHERE id = ?";
 
 
-    private static List<User> users = new ArrayList<User>();
+    private static List<User> users = new ArrayList<>();
 
     public UserDaoJDBCImpl() {
     }
 
     public void createUsersTable() {
-        boolean success = executeTable(SQL_CREATE_TABLE);
+        boolean success = false;
+        try (Connection connection = jdbcGetConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(SQL_CREATE_TABLE);
+            System.out.println("Query executed successfully.");
+            success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            success = false;
+        }
         if (success)
             System.out.println("Table created\n");
         else
@@ -40,7 +49,16 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         //удаление всей таблицы
-        boolean success = executeTable(SQL_DROP_TABLE);
+        boolean success = false;
+        try (Connection connection = jdbcGetConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(SQL_DROP_TABLE);
+            System.out.println("Query executed successfully.");
+            success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            success = false;
+        }
         if (success)
             System.out.println("Table dropped.\n");
         else
@@ -52,15 +70,26 @@ public class UserDaoJDBCImpl implements UserDao {
         //проверка на положительный возраст
         if (age >= 0) {
             User user = new User(name, lastName, age);
-            user.setId(executeAddUser(name, lastName, age, SQL_INSERT));//Отправляем его в таблицу и присваиваю id
+            long id = -1;
+        try (Connection connection = jdbcGetConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
 
-            if (user.getId() != -1) {//вытаскиваю id из таблицы//set id user
-                users.add(user);//добавляю в список
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+
+            preparedStatement.executeUpdate();
+            System.out.println("Query executed successfully.");
+            id = jdbcQueryGetId(preparedStatement);
+            if(id != -1) {
+                user.setId(id);
+                users.add(user);
                 System.out.println("User saved\n");
-            } else
-                throw new NoResultException("User didn`t saved.\n");
-
-        } else
+            }else
+                System.out.println("User save failed\n");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}else
             throw new NumberFormatException("Age cannot be negative!\n");
 
     }
@@ -68,7 +97,20 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void removeUserById(long id) {
         //delete from users d ID
-        boolean success = executeRemoveUserById(SQL_REMOVE_BY_ID,id);
+        boolean success = false;
+        try (Connection connection = jdbcGetConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_REMOVE_BY_ID)) {
+
+            preparedStatement.setLong(1, id);
+
+            int result = preparedStatement.executeUpdate();
+            if (result > 0)
+                System.out.println("Query executed successfully.");
+            success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            success = false;
+        }
         if(success) {
            getAllUsers().removeIf(user -> user.getId() == id);
             System.out.println("User removed\n");
@@ -83,7 +125,16 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         //удаляем всех user
-        boolean success = executeTable(SQL_CLEAN_ALL);
+        boolean success = false;
+        try (Connection connection = jdbcGetConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(SQL_CLEAN_ALL);
+            System.out.println("Query executed successfully.");
+            success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            success = false;
+        }
         if (success) {
             users.clear();
             System.out.println("Table cleaned\n");
@@ -91,4 +142,18 @@ public class UserDaoJDBCImpl implements UserDao {
             System.out.println("Query failed.\n");
 
     }
+    //Получение Id выбранного объекта из таблицы
+    private static Long jdbcQueryGetId(PreparedStatement preparedStatement) throws SQLException {
+        long id = -1;
+        try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+            if (resultSet.next()) {
+                id = resultSet.getInt(1);
+                return id;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+            return id;
+    }
 }
+
