@@ -22,7 +22,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     private static final String SQL_CLEAN_ALL = "TRUNCATE TABLE users";
 
-    private static final String  SQL_REMOVE_BY_ID = "DELETE FROM users WHERE id = ?";
+    private static final String SQL_REMOVE_BY_ID = "DELETE FROM users WHERE id = ?";
 
 
     private static List<User> users = new ArrayList<>();
@@ -71,25 +71,26 @@ public class UserDaoJDBCImpl implements UserDao {
         if (age >= 0) {
             User user = new User(name, lastName, age);
             long id = -1;
-        try (Connection connection = jdbcGetConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
+            try (Connection connection = jdbcGetConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
 
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, lastName);
-            preparedStatement.setByte(3, age);
+                preparedStatement.setString(1, name);
+                preparedStatement.setString(2, lastName);
+                preparedStatement.setByte(3, age);
 
-            preparedStatement.executeUpdate();
-            System.out.println("Query executed successfully.");
-            id = jdbcQueryGetId(preparedStatement);
-            if(id != -1) {
-                user.setId(id);
-                users.add(user);
-                System.out.println("User saved\n");
-            }else
-                System.out.println("User save failed\n");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }}else
+                preparedStatement.executeUpdate();
+                System.out.println("Query executed successfully.");
+                id = jdbcQueryGetId(preparedStatement);
+                if (id != -1) {
+                    user.setId(id);
+                    users.add(user);
+                    System.out.println("User saved\n");
+                } else
+                    System.out.println("User save failed\n");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else
             throw new NumberFormatException("Age cannot be negative!\n");
 
     }
@@ -111,17 +112,18 @@ public class UserDaoJDBCImpl implements UserDao {
             e.printStackTrace();
             success = false;
         }
-        if(success) {
-           getAllUsers().removeIf(user -> user.getId() == id);
+        if (success) {
+            getAllUsers().removeIf(user -> user.getId() == id);
             System.out.println("User removed\n");
-        }else
+        } else
             System.out.println("Query failed.\n");
 
     }
 
     public List<User> getAllUsers() {
 
-    return users;}
+        return users;
+    }
 
     public void cleanUsersTable() {
         //удаляем всех user
@@ -142,6 +144,7 @@ public class UserDaoJDBCImpl implements UserDao {
             System.out.println("Query failed.\n");
 
     }
+
     //Получение Id выбранного объекта из таблицы
     private static Long jdbcQueryGetId(PreparedStatement preparedStatement) throws SQLException {
         long id = -1;
@@ -153,7 +156,7 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-            return id;
+        return id;
     }
 }
 

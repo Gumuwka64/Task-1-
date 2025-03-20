@@ -1,5 +1,5 @@
 First, Check UserServiceImpl class
-when u made,a object of UserService class firstoval make a flag method setWay true or false
+when u made,an object of UserService class firstoval make a flag method setWay true or false
 when flag true ,class will be using methods of Hibernate
 when flag false , class will be using methods of JDBC
 for ur comfort in main class and test class was made boolean constant "HIBER"

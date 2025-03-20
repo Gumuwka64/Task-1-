@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Util {
-    // реализуйте настройку соеденения с БД
     //константы подключения к БД
     private static final String URL = "jdbc:postgresql://localhost:5432/SomeForStudy";
     private static final String USER = "postgres";
@@ -23,7 +22,8 @@ public class Util {
 
     private static SessionFactory sessionFactory;
 //    private static StandardServiceRegistry registry;
-//Закомментил оч длинный и неудобный метод
+//Закомментил оч длинный и неудобный метод подключения Hibernate
+{
 //    public static SessionFactory getSessionFactory() {
 //        if (sessionFactory == null) {
 //            try {
@@ -56,10 +56,7 @@ public class Util {
 //        }
 //        return sessionFactory;
 //    }
-
-
-
-
+}
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
@@ -85,23 +82,6 @@ public class Util {
     //подключение к БД
     public static Connection jdbcGetConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
-    }
-
-    //удаляем user по Id из таблицы
-    public static boolean jdbcQueryRemoveUserById(String query, long id) {
-        try (Connection connection = jdbcGetConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            preparedStatement.setLong(1, id);
-
-            int result = preparedStatement.executeUpdate();
-            if (result > 0)
-                System.out.println("Query executed successfully.");
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 }
 

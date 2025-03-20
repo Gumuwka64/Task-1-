@@ -10,10 +10,7 @@ public class Main {
     private static UserServiceImpl service = new UserServiceImpl();
 
     public static void main(String[] args) throws InterruptedException {
-        service.setWay(HIBER);
         allQuery();
-
-
     }
     public static void printAllUsers(List<User> users) {
         if(users == null){
@@ -27,6 +24,7 @@ public class Main {
 
 
     public static void allQuery() {
+        service.setWay(HIBER);
         service.dropUsersTable();
         service.createUsersTable();
         service.saveUser("Иван","Иванов", (byte) 2);
